@@ -1,0 +1,525 @@
+/* =====================================================================
+   A4 invoice — replicates the structure of the reference invoice
+   (Image 1). Strictly black / grey on white. Same CSS for the on-screen
+   preview, the PDF capture and the browser print.
+   ===================================================================== */
+
+.inv-root {
+  display: flex;
+  flex-direction: column;
+  gap: 10mm;
+  align-items: flex-start;
+}
+
+.inv-page {
+  --inv-pad-x: 15mm;
+  --inv-font: 11.5pt;
+  --inv-row-pad: 2.4mm;
+  --inv-gap-legal: 13mm;
+  --inv-gap-title: 11mm;
+  --inv-gap-patient: 7mm;
+  --inv-gap-table: 8mm;
+  --inv-gap-mentions: 34mm;
+  --inv-line: 1.5;
+
+  position: relative;
+  box-sizing: border-box;
+  width: 210mm;
+  height: 297mm;
+  overflow: hidden;
+  background: #fff;
+  color: #000;
+  font-family: 'Times New Roman', Tinos, Times, serif;
+  font-size: var(--inv-font);
+  line-height: var(--inv-line);
+  display: flex;
+  flex-direction: column;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  font-kerning: normal;
+  letter-spacing: 0; /* keeps Arabic letter joining intact in every renderer */
+}
+
+.inv-page *,
+.inv-page *::before,
+.inv-page *::after {
+  box-sizing: border-box;
+}
+
+/* Density levels — applied automatically when many acts are entered */
+.inv-page.density-1 {
+  --inv-font: 11pt;
+  --inv-row-pad: 1.6mm;
+  --inv-gap-legal: 8mm;
+  --inv-gap-title: 7mm;
+  --inv-gap-patient: 5mm;
+  --inv-gap-table: 5mm;
+  --inv-gap-mentions: 14mm;
+  --inv-line: 1.4;
+}
+.inv-page.density-2 {
+  --inv-font: 10pt;
+  --inv-row-pad: 0.9mm;
+  --inv-gap-legal: 5mm;
+  --inv-gap-title: 4mm;
+  --inv-gap-patient: 3mm;
+  --inv-gap-table: 3.5mm;
+  --inv-gap-mentions: 6mm;
+  --inv-line: 1.3;
+}
+
+/* ---------- Header Banner (Official Letterhead) ---------- */
+.inv-header {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  padding: 7mm var(--inv-pad-x) 0;
+}
+
+.inv-header-banner {
+  display: flex;
+  align-items: stretch;
+  min-height: 38mm;
+  position: relative;
+  width: 100%;
+}
+
+.inv-banner-badge {
+  flex: none;
+  width: 32mm;
+  height: 42.3mm;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+}
+.inv-banner-badge img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.inv-banner-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.inv-banner-topbar {
+  height: 6.8mm;
+  background: #1aa7df;
+  border-radius: 0 3.5mm 3.5mm 0;
+  width: 100%;
+  flex: none;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.inv-banner-content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  column-gap: 5mm;
+  padding: 2.2mm 0 0 5mm;
+  align-items: start;
+}
+
+.inv-banner-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8mm;
+  min-width: 0;
+}
+
+.inv-banner-col.latin {
+  text-align: left;
+  font-family: 'Qatar 2022 Arabic', 'Qatar 2022', Roboto, Arial, sans-serif;
+}
+
+.inv-banner-col.arabic {
+  direction: rtl;
+  text-align: right;
+  unicode-bidi: isolate;
+  font-family: 'Qatar 2022 Arabic', 'Qatar 2022', 'Baloo Bhaijaan 2', sans-serif;
+  padding-right: 0.5mm;
+}
+
+.inv-banner-doc-name {
+  font-family: 'Qatar 2022 Arabic', 'Qatar 2022', sans-serif;
+  font-weight: 700;
+  color: #0e58a3;
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+.inv-banner-doc-name.latin {
+  font-size: 13pt;
+  line-height: 1.15;
+  margin-bottom: 0.7mm;
+}
+.inv-banner-doc-name.arabic {
+  font-size: 15.5pt;
+  line-height: 1.15;
+  margin-bottom: 0.7mm;
+}
+
+.inv-banner-line {
+  font-family: 'Qatar 2022 Arabic', 'Qatar 2022', sans-serif;
+  color: #383838;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.inv-banner-line.latin {
+  font-size: 8.8pt;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.inv-banner-line.latin.bat-line {
+  font-weight: 700;
+  color: #111111;
+  margin-top: 0.4mm;
+}
+.inv-banner-line.arabic {
+  font-size: 10.2pt;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* ---------- Body ---------- */
+.inv-body {
+  position: relative; /* offsetParent for measurements */
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 var(--inv-pad-x);
+}
+
+.inv-legal {
+  margin: var(--inv-gap-legal) 0 0 8mm;
+  line-height: 1.45;
+}
+.inv-legal div {
+  white-space: nowrap;
+}
+
+.inv-title {
+  margin: var(--inv-gap-title) 0 0;
+  text-align: center;
+  font-weight: 700;
+  font-size: calc(var(--inv-font) + 0.5pt);
+  letter-spacing: 0.02em;
+}
+.inv-title.no-legal {
+  margin-top: calc(var(--inv-gap-legal) + var(--inv-gap-title));
+}
+
+.inv-patient {
+  margin: var(--inv-gap-patient) 0 0 14mm;
+  line-height: 1.42;
+}
+.inv-patient .v {
+  white-space: pre-wrap;
+}
+
+.inv-table {
+  width: 100%;
+  margin-top: var(--inv-gap-table);
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.inv-table col.c-act {
+  width: 71%;
+}
+.inv-table col.c-fee {
+  width: 29%;
+}
+.inv-table th,
+.inv-table td {
+  border: 0.3mm solid #000;
+  padding: var(--inv-row-pad) 2.6mm;
+  vertical-align: middle;
+}
+.inv-table th {
+  font-weight: 700;
+  text-align: center;
+}
+.inv-table td.act {
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.inv-table td.fee {
+  text-align: center;
+  white-space: nowrap;
+}
+.inv-table tr.inv-total td.blank {
+  border: none;
+}
+.inv-table tr.inv-total td.total {
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  padding-top: calc(var(--inv-row-pad) + 0.6mm);
+  padding-bottom: calc(var(--inv-row-pad) + 0.6mm);
+}
+
+.inv-mentions {
+  margin: var(--inv-gap-mentions) 0 0 12mm;
+  line-height: 1.5;
+}
+.inv-mentions strong {
+  font-weight: 700;
+}
+
+/* ---------- Light Background Pattern & Watermark ---------- */
+.inv-bg-pattern {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.inv-bg-stripes {
+  position: absolute;
+  inset: -25mm;
+  width: calc(100% + 50mm);
+  height: calc(100% + 50mm);
+  background-image: repeating-linear-gradient(
+    68deg,
+    transparent,
+    transparent 4.5mm,
+    rgba(31, 158, 217, 0.08) 4.5mm,
+    rgba(31, 158, 217, 0.08) 5mm
+  );
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.inv-bg-pattern.tone-grey .inv-bg-stripes {
+  background-image: repeating-linear-gradient(
+    68deg,
+    transparent,
+    transparent 4.5mm,
+    rgba(0, 0, 0, 0.045) 4.5mm,
+    rgba(0, 0, 0, 0.045) 5mm
+  );
+}
+
+.inv-bg-watermark {
+  position: absolute;
+  top: 52%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90mm;
+  height: 90mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.038;
+  pointer-events: none;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.inv-bg-watermark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ---------- Footer ---------- */
+.inv-footer-text {
+  flex: none;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  font-size: 9pt;
+  color: #333;
+  padding: 0 var(--inv-pad-x) 1.5mm;
+}
+
+.inv-pageno {
+  position: absolute;
+  z-index: 1;
+  right: var(--inv-pad-x);
+  bottom: 27mm;
+  font-size: 8.5pt;
+  color: #444;
+}
+
+.inv-footer {
+  flex: none;
+  position: relative;
+  z-index: 1;
+  height: 27mm;
+  margin: 0 var(--inv-pad-x) 4mm;
+  display: flex;
+  align-items: stretch;
+  background: #7d7e80;
+  color: #fff;
+  border-radius: 0 2.5mm 2.5mm 0;
+  overflow: hidden;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.inv-footer.style-grey {
+  background: #7d7e80;
+}
+.inv-footer.style-blue {
+  background: #0072bc;
+  border-radius: 3mm;
+  background-image: repeating-linear-gradient(
+    68deg,
+    transparent,
+    transparent 4.5mm,
+    rgba(255, 255, 255, 0.08) 4.5mm,
+    rgba(255, 255, 255, 0.08) 5mm
+  );
+}
+
+.inv-footer-left {
+  position: relative;
+  flex: none;
+  width: 52mm;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 10mm;
+  background: #c8c9cb;
+  clip-path: polygon(0 0, 100% 0, 78% 100%, 0 100%);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+.inv-footer.style-blue .inv-footer-left {
+  background: transparent;
+  clip-path: none;
+  width: auto;
+  padding-left: 5mm;
+  padding-right: 3.5mm;
+}
+
+.inv-qr {
+  width: 20mm;
+  height: 20mm;
+  background: #ffffff;
+  padding: 0.8mm;
+  border-radius: 1.8mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-shadow: 0 0.3mm 0.8mm rgba(0, 0, 0, 0.2);
+}
+.inv-footer.style-blue .inv-qr {
+  width: 21.5mm;
+  height: 21.5mm;
+  background: transparent;
+  padding: 0;
+  border-radius: 2.5mm;
+  box-shadow: none;
+}
+.inv-qr img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 2.5mm;
+}
+
+.inv-footer-lines {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 1.8mm;
+  padding: 0 6mm 0 2mm;
+  font-family: 'Qatar 2022 Arabic', 'Qatar 2022', Roboto, Arial, sans-serif;
+  font-size: 9.6pt;
+  line-height: 1.25;
+  letter-spacing: 0;
+  color: #ffffff;
+}
+
+.inv-footer-line {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2.2mm;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.inv-footer-line .sep {
+  opacity: 0.85;
+  margin: 0 1mm;
+}
+.inv-footer-line .ar {
+  direction: rtl;
+  unicode-bidi: isolate;
+  font-family: 'Qatar 2022 Arabic', 'Qatar 2022', 'Baloo Bhaijaan 2', sans-serif;
+  font-size: 10.6pt;
+  font-weight: 700;
+}
+.inv-footer-line svg {
+  flex: none;
+  width: 4mm;
+  height: 4mm;
+  font-size: 10pt;
+  fill: currentColor;
+  display: block;
+}
+.inv-footer-line .txt {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 700;
+  font-size: 9.6pt;
+}
+
+.inv-social-line {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.inv-social-icons {
+  display: flex;
+  align-items: center;
+  gap: 1.6mm;
+}
+
+/* Circular icon badges for the blue footer style */
+.inv-footer.style-blue .inv-icon-badge {
+  width: 4.8mm;
+  height: 4.8mm;
+  border-radius: 50%;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-shadow: 0 0.2mm 0.4mm rgba(0, 0, 0, 0.2);
+}
+.inv-footer.style-blue .inv-icon-badge svg {
+  width: 3mm;
+  height: 3mm;
+  fill: #0072bc;
+}
+
+.inv-footer.style-grey .inv-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.inv-footer.style-grey .inv-icon-badge svg {
+  width: 3.8mm;
+  height: 3.8mm;
+  fill: #ffffff;
+}
