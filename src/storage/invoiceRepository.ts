@@ -1,6 +1,8 @@
 import type { Invoice } from '../types/invoice';
 import { idb, invoiceStore, metaStore } from './db';
 import { uid } from '../utils/format';
+import { isNeonConfigured } from './neonClient';
+import { neonInvoiceRepository } from './neonInvoiceRepository';
 
 export interface InvoiceRepository {
   list(): Promise<Invoice[]>;
@@ -62,4 +64,6 @@ export const localInvoiceRepository: InvoiceRepository = {
   },
 };
 
-export const invoiceRepository: InvoiceRepository = localInvoiceRepository;
+export const invoiceRepository: InvoiceRepository = isNeonConfigured()
+  ? neonInvoiceRepository
+  : localInvoiceRepository;

@@ -1,6 +1,8 @@
 import type { ClinicSettings } from '../types/settings';
 import { idb, metaStore } from './db';
 import { DEFAULT_SETTINGS } from './defaults';
+import { isNeonConfigured } from './neonClient';
+import { neonSettingsRepository } from './neonSettingsRepository';
 
 export interface SettingsRepository {
   load(): Promise<ClinicSettings>;
@@ -131,4 +133,6 @@ export const localSettingsRepository: SettingsRepository = {
   },
 };
 
-export const settingsRepository: SettingsRepository = localSettingsRepository;
+export const settingsRepository: SettingsRepository = isNeonConfigured()
+  ? neonSettingsRepository
+  : localSettingsRepository;
